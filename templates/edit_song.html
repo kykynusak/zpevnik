@@ -1,0 +1,17 @@
+<h2 class="form-title">Úprava písničky</h2>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<form method="POST" class="song-edit-form">
+    <div class="form-group">
+        <label for="song_name">Název písně:</label>
+        <input type="text" id="song_name" name="song_name" value="{{ song.name }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="song_text">Text písně:</label>
+        <textarea id="song_text" name="song_text" required>{{ song.text }}</textarea>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn save-btn">💾 Uložit změny</button>
+    </div>
+</form>
