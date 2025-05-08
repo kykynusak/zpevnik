@@ -280,3 +280,56 @@ p {
         font-size: 1.5em;
     }
 }
+
+@media (max-width: 600px) {
+    .song-detail {
+        font-size: 0.6em;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    .actions a {
+        font-size: 0.9em;
+        padding: 8px 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .song-detail {
+        margin-bottom: 80px;
+    }
+}
+
+.actions {
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 600px) {
+    .song-edit-form {
+        transform: scale(1.2);
+        transform-origin: top;
+    }
+
+    .form-title {
+        font-size: 2em;
+    }
+
+    .form-group label {
+        font-size: 1.1em;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        font-size: 1.1em;
+        padding: 12px;
+    }
+
+    .save-btn {
+        font-size: 1.3em;
+        padding: 12px 20px;
+    }
+}
+
