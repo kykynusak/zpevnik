@@ -1,8 +1,9 @@
 services:
   - type: web
-    name: zpevnik-app
+    name: zpevnik
     env: python
     buildCommand: ""
     startCommand: gunicorn zpevnik:app
-    runtime: python
-    region: frankfurt
+    envVars:
+      - key: FLASK_ENV
+        value: production
