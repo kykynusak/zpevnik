@@ -16,109 +16,40 @@
             <button onclick="showCategory('lidovky')">Lidovky</button>
         </div>
 
-        <div id="verbunk" class="category" style="display: none;">
-            <h2>Verbuňk</h2>
+        {% for category in ['verbunk', 'vrtena', 'lidovky'] %}
+        <div id="{{ category }}" class="category" style="display: none;">
+            <h2>{{ category.capitalize() }}</h2>
             <ul>
-                {% for song in songs['verbunk'] %}
+                {% for song in songs[category] %}
                 <li class="song-item">
                     <span class="song-title">
-                        <a href="{{ url_for('song_detail', category='verbunk', song_index=loop.index0) }}">{{ song.name }}</a>
+                        <a href="{{ url_for('song_detail', category=category, song_index=loop.index0) }}">{{ song.name }}</a>
                     </span>
                     <div class="song-controls">
-                        <a href="{{ url_for('edit_song', category='verbunk', song_index=loop.index0) }}" class="btn edit">✏️</a>
-                        <form action="{{ url_for('delete_song', category='verbunk', song_index=loop.index0) }}" method="POST" style="display:inline;">
+                        <a href="{{ url_for('edit_song', category=category, song_index=loop.index0) }}" class="btn edit">✏️</a>
+                        <form action="{{ url_for('delete_song', category=category, song_index=loop.index0) }}" method="POST" style="display:inline;">
                             <button type="submit" class="btn delete">🗑️</button>
                         </form>
                     </div>
                 </li>
                 {% endfor %}
             </ul>
-        
-            <!-- Tlačítko pro přidání písničky -->
-            <div class="add">
-                <button class="btn add" onclick="showAddForm('verbunk')">➕ Přidat písničku</button>
-            </div>
-        
-            <!-- Formulář pro přidání písničky, skrytý až po kliknutí na tlačítko -->
-            <div id="add-song-form-verbunk" style="display: none;">
-                <form action="/add_song" method="POST">
-                    <input type="hidden" name="category" value="verbunk">
-                    <input class="form-input" type="text" name="song_name" placeholder="Název písničky" required>
-                    <textarea class="form-textarea" name="song_text" placeholder="Text písničky" required></textarea>
-                    <button class="form-button" type="submit">Přidat písničku</button>
-                </form>
-            </div>
-        </div>
-        
-        <div id="vrtena" class="category" style="display: none;">
-            <h2>Vrtěná</h2>
-            <ul>
-                {% for song in songs['vrtena'] %}
-                <li class="song-item">
-                    <span class="song-title">
-                        <a href="{{ url_for('song_detail', category='vrtena', song_index=loop.index0) }}">{{ song.name }}</a>
-                    </span>
-                    <div class="song-controls">
-                        <a href="{{ url_for('edit_song', category='vrtena', song_index=loop.index0) }}" class="btn edit">✏️</a>
-                        <form action="{{ url_for('delete_song', category='vrtena', song_index=loop.index0) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn delete">🗑️</button>
-                        </form>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
-        
-            <!-- Tlačítko pro přidání písničky -->
-            <div class="add">
-                <button class="btn add" onclick="showAddForm('vrtena')">➕ Přidat písničku</button>
 
-            </div>
-        
-            <!-- Formulář pro přidání písničky, skrytý až po kliknutí na tlačítko -->
-            <div id="add-song-form-vrtena" style="display: none;">
-                <form action="/add_song" method="POST">
-                    <input type="hidden" name="category" value="vrtena">
-                    <input class="form-input" type="text" name="song_name" placeholder="Název písničky" required>
-                    <textarea class="form-textarea" name="song_text" placeholder="Text písničky" required></textarea>
-                    <button class="form-button" type="submit">Přidat písničku</button>
-                </form>
-            </div>
-        </div>
-        
-        <div id="lidovky" class="category" style="display: none;">
-            <h2>Lidovky</h2>
-            <ul>
-                {% for song in songs['lidovky'] %}
-                <li class="song-item">
-                    <span class="song-title">
-                        <a href="{{ url_for('song_detail', category='lidovky', song_index=loop.index0) }}">{{ song.name }}</a>
-                    </span>
-                    <div class="song-controls">
-                        <a href="{{ url_for('edit_song', category='lidovky', song_index=loop.index0) }}" class="btn edit">✏️</a>
-                        <form action="{{ url_for('delete_song', category='lidovky', song_index=loop.index0) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn delete">🗑️</button>
-                        </form>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
-        
-            <!-- Tlačítko pro přidání písničky -->
             <div class="add">
-                <button class="btn add" onclick="showAddForm('lidovky')">➕ Přidat písničku</button>
-
+                <button class="btn add" onclick="showAddForm('{{ category }}')">➕ Přidat písničku</button>
             </div>
-        
-            <!-- Formulář pro přidání písničky, skrytý až po kliknutí na tlačítko -->
-            <div id="add-song-form-lidovky" style="display: none;">
-                <form action="/add_song" method="POST">
-                    <input type="hidden" name="category" value="lidovky">
+
+            <div id="add-song-form-{{ category }}" style="display: none;">
+                <form action="{{ url_for('add_song') }}" method="POST">
+                    <input type="hidden" name="category" value="{{ category }}">
                     <input class="form-input" type="text" name="song_name" placeholder="Název písničky" required>
                     <textarea class="form-textarea" name="song_text" placeholder="Text písničky" required></textarea>
                     <button class="form-button" type="submit">Přidat písničku</button>
                 </form>
             </div>
         </div>
+        {% endfor %}
+
     <script>
         function showCategory(id) {
             document.querySelectorAll('.category').forEach(el => el.style.display = 'none');
