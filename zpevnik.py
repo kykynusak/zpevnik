@@ -1,67 +1,87 @@
-import json
+import os
+import psycopg2
 from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
-# Načte písničky z JSON souboru
-def load_songs_from_file():
-    global songs
-    try:
-        with open('songs.json', 'r', encoding='utf-8') as f:
-            songs = json.load(f)  # Načte písničky podle kategorií
-    except FileNotFoundError:
-        # Pokud soubor neexistuje, použijeme výchozí hodnoty
-        songs = {
-            "verbunk": [],
-            "vrtena": [],
-            "lidovky": []
-        }
-        save_songs_to_file()  # Uloží výchozí hodnoty do souboru
+# Připojení k databázi pomocí proměnné prostředí
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Uloží písničky do JSON souboru
-def save_songs_to_file():
-    with open('songs.json', 'w', encoding='utf-8') as f:
-        json.dump(songs, f, ensure_ascii=False, indent=4)
+def get_connection():
+    return psycopg2.connect(DATABASE_URL)
 
-@app.route('/song/<category>/<int:song_index>')
-def song_detail(category, song_index):
-    song = songs[category][song_index]
-    return render_template('song_detail.html', song=song, category=category, song_index=song_index)
+@app.route('/')
+def home():
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, category, name FROM songs ORDER BY category, name;")
+            rows = cur.fetchall()
+            songs = {"verbunk": [], "vrtena": [], "lidovky": []}
+            for row in rows:
+                song_id, category, name = row
+                if category in songs:
+                    songs[category].append({"id": song_id, "name": name})
+    return render_template('index.html', songs=songs)
 
-@app.route('/delete_song/<category>/<int:song_index>', methods=['POST'])
-def delete_song(category, song_index):
-    if category in songs and 0 <= song_index < len(songs[category]):
-        del songs[category][song_index]
-        save_songs_to_file()  # Uložení změn po smazání
-    return redirect(url_for('home'))
-
-@app.route('/edit_song/<category>/<int:song_index>', methods=['GET', 'POST'])
-def edit_song(category, song_index):
-    if request.method == 'POST':
-        songs[category][song_index]['name'] = request.form['song_name']
-        songs[category][song_index]['text'] = request.form['song_text']
-        save_songs_to_file()  # Uložení změn po úpravě
-        return redirect(url_for('song_detail', category=category, song_index=song_index))
-    else:
-        song = songs[category][song_index]
-        return render_template('edit_song.html', song=song, category=category, song_index=song_index)
+@app.route('/song/<song_id>')
+def song_detail(song_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, category, name, text FROM songs WHERE id = %s;", (song_id,))
+            song = cur.fetchone()
+    if not song:
+        return "Song not found", 404
+    return render_template('song_detail.html', song={
+        "id": song[0],
+        "category": song[1],
+        "name": song[2],
+        "text": song[3]
+    })
 
 @app.route('/add_song', methods=['POST'])
 def add_song():
     category = request.form['category']
     song_name = request.form['song_name']
     song_text = request.form['song_text']
-    
-    songs[category].append({"name": song_name, "text": song_text})  # Přidání písničky do kategorie
-    
-    save_songs_to_file()  # Uložení dat do souboru
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO songs (id, category, name, text) VALUES (gen_random_uuid(), %s, %s, %s);",
+                        (category, song_name, song_text))
+            conn.commit()
     return redirect(url_for('home'))
 
-@app.route('/')
-def home():
-    load_songs_from_file()  # Načte písničky při každém restartu aplikace
-    return render_template('index.html', songs=songs)
+@app.route('/delete_song/<song_id>', methods=['POST'])
+def delete_song(song_id):
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM songs WHERE id = %s;", (song_id,))
+            conn.commit()
+    return redirect(url_for('home'))
+
+@app.route('/edit_song/<song_id>', methods=['GET', 'POST'])
+def edit_song(song_id):
+    if request.method == 'POST':
+        name = request.form['song_name']
+        text = request.form['song_text']
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("UPDATE songs SET name = %s, text = %s WHERE id = %s;",
+                            (name, text, song_id))
+                conn.commit()
+        return redirect(url_for('song_detail', song_id=song_id))
+    else:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, category, name, text FROM songs WHERE id = %s;", (song_id,))
+                song = cur.fetchone()
+        if not song:
+            return "Song not found", 404
+        return render_template('edit_song.html', song={
+            "id": song[0],
+            "category": song[1],
+            "name": song[2],
+            "text": song[3]
+        })
 
 if __name__ == '__main__':
-    load_songs_from_file()  # Načte písničky při spuštění aplikace
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
