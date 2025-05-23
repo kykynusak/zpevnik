@@ -27,7 +27,7 @@
                     </span>
                     <div class="song-controls">
                         <a href="{{ url_for('edit_song', song_id=song.id) }}" class="btn edit">✏️</a>
-                        <button class="btn delete" onclick="openDeleteModal({{ song.id }})">🗑️</button>
+                        <button class="btn delete" onclick="openDeleteModal('{{ song.id }}')">🗑️</button>
                     </div>
                 </li>
                 {% endfor %}
