@@ -2,6 +2,20 @@ import os
 import psycopg2
 from flask import Flask, render_template, request, redirect, url_for
 import sys
+from db import get_connection
+
+conn = get_connection()
+
+if conn:
+    cursor = conn.cursor()
+
+    # Například načtení všech písní
+    cursor.execute("SELECT * FROM songs;")
+    songs = cursor.fetchall()
+    print(songs)
+
+    cursor.close()
+    conn.close()
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 print("DATABASE_URL:", DATABASE_URL, file=sys.stderr)
@@ -17,7 +31,7 @@ def get_connection():
 
 @app.route('/')
 def home():
-    
+
     print("Spouštím homepage", file=sys.stderr)
     try:
         with get_connection() as conn:
