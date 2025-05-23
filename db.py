@@ -18,3 +18,4 @@ def get_connection():
     except Exception as e:
         print("❌ Chyba při připojení k DB:", e)
         return None
+print("DB_USER:", os.getenv("DB_USER"))
