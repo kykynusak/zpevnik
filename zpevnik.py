@@ -1,6 +1,11 @@
 import os
 import psycopg2
 from flask import Flask, render_template, request, redirect, url_for
+import sys
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+print("DATABASE_URL:", DATABASE_URL, file=sys.stderr)
+
 
 app = Flask(__name__)
 
@@ -12,6 +17,17 @@ def get_connection():
 
 @app.route('/')
 def home():
+    
+    print("Spouštím homepage", file=sys.stderr)
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, category, name FROM songs ORDER BY category, name;")
+                rows = cur.fetchall()
+    except Exception as e:
+        print("Chyba v DB dotazu:", e, file=sys.stderr)
+        return "Chyba při připojení k databázi", 500
+    
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT id, category, name FROM songs ORDER BY category, name;")
@@ -22,6 +38,7 @@ def home():
                 if category in songs:
                     songs[category].append({"id": song_id, "name": name})
     return render_template('index.html', songs=songs)
+
 
 @app.route('/song/<song_id>')
 def song_detail(song_id):
