@@ -48,39 +48,6 @@
         </div>
         {% endfor %}
 
-    <script>
-        function showCategory(id) {
-            document.querySelectorAll('.category').forEach(el => el.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
-        }
-
-        function showAddForm(category) {
-            document.getElementById('add-song-form-' + category).style.display = 'block';
-        }
-    </script>
-        <script>
-    function confirmDelete(event) {
-        event.preventDefault();  // Zamezí odeslání formuláře
-
-        const password = prompt("Zadejte heslo pro smazání:");
-
-        if (password === "nigga") {  // <- Změň si heslo dle potřeby
-            const form = event.target;
-            const songId = form.getAttribute("data-song-id");
-
-            const deleteForm = document.createElement("form");
-            deleteForm.method = "POST";
-            deleteForm.action = `/delete_song/${songId}`;
-            document.body.appendChild(deleteForm);
-            deleteForm.submit();
-        } else if (password !== null) {
-            alert("Špatné heslo.");
-        }
-
-        return false;
-    }
-</script>
-
 <script>
     function openDeleteModal(songId) {
         document.getElementById('deleteSongId').value = songId;
