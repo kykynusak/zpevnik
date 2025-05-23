@@ -23,11 +23,11 @@
                 {% for song in songs[category] %}
                 <li class="song-item">
                     <span class="song-title">
-                        <a href="{{ url_for('song_detail', category=category, song_index=loop.index0) }}">{{ song.name }}</a>
+                        <a href="{{ url_for('song_detail', song_id=song.id) }}">{{ song.name }}</a>
                     </span>
                     <div class="song-controls">
-                        <a href="{{ url_for('edit_song', category=category, song_index=loop.index0) }}" class="btn edit">✏️</a>
-                        <form action="{{ url_for('delete_song', category=category, song_index=loop.index0) }}" method="POST" style="display:inline;">
+                        <a href="{{ url_for('edit_song', song_id=song.id) }}" class="btn edit">✏️</a>
+                        <form action="{{ url_for('delete_song', song_id=song.id) }}" method="POST" style="display:inline;">
                             <button type="submit" class="btn delete">🗑️</button>
                         </form>
                     </div>
@@ -57,7 +57,7 @@
         }
 
         function showAddForm(category) {
-             document.getElementById('add-song-form-' + category).style.display = 'block';
+            document.getElementById('add-song-form-' + category).style.display = 'block';
         }
     </script>
 </body>
