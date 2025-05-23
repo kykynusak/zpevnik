@@ -1,56 +1,26 @@
-import os
-import psycopg2
-from flask import Flask, render_template, request, redirect, url_for
 import sys
-from db import get_connection
-
-conn = get_connection()
-
-if conn:
-    cursor = conn.cursor()
-
-    # Například načtení všech písní
-    cursor.execute("SELECT * FROM songs;")
-    songs = cursor.fetchall()
-    print(songs)
-
-    cursor.close()
-    conn.close()
-
-DATABASE_URL = os.environ.get("DATABASE_URL")
-print("DATABASE_URL:", DATABASE_URL, file=sys.stderr)
-
+from flask import Flask, render_template, request, redirect, url_for
+from db import get_connection  # používáme pouze tuto jedinou funkci pro DB připojení
 
 app = Flask(__name__)
 
-# Připojení k databázi pomocí proměnné prostředí
-DATABASE_URL = os.environ.get("DATABASE_URL")
-
-def get_connection():
-    return psycopg2.connect(DATABASE_URL)
-
 @app.route('/')
 def home():
-
     print("Spouštím homepage", file=sys.stderr)
     try:
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT id, category, name FROM songs ORDER BY category, name;")
                 rows = cur.fetchall()
+                songs = {"verbunk": [], "vrtena": [], "lidovky": []}
+                for row in rows:
+                    song_id, category, name = row
+                    if category in songs:
+                        songs[category].append({"id": song_id, "name": name})
     except Exception as e:
         print("Chyba v DB dotazu:", e, file=sys.stderr)
         return "Chyba při připojení k databázi", 500
-    
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id, category, name FROM songs ORDER BY category, name;")
-            rows = cur.fetchall()
-            songs = {"verbunk": [], "vrtena": [], "lidovky": []}
-            for row in rows:
-                song_id, category, name = row
-                if category in songs:
-                    songs[category].append({"id": song_id, "name": name})
+
     return render_template('index.html', songs=songs)
 
 
@@ -69,6 +39,7 @@ def song_detail(song_id):
         "text": song[3]
     })
 
+
 @app.route('/add_song', methods=['POST'])
 def add_song():
     category = request.form['category']
@@ -81,6 +52,7 @@ def add_song():
             conn.commit()
     return redirect(url_for('home'))
 
+
 @app.route('/delete_song/<song_id>', methods=['POST'])
 def delete_song(song_id):
     with get_connection() as conn:
@@ -88,6 +60,7 @@ def delete_song(song_id):
             cur.execute("DELETE FROM songs WHERE id = %s;", (song_id,))
             conn.commit()
     return redirect(url_for('home'))
+
 
 @app.route('/edit_song/<song_id>', methods=['GET', 'POST'])
 def edit_song(song_id):
@@ -113,6 +86,7 @@ def edit_song(song_id):
             "name": song[2],
             "text": song[3]
         })
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
