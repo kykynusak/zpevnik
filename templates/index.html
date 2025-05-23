@@ -27,9 +27,7 @@
                     </span>
                     <div class="song-controls">
                         <a href="{{ url_for('edit_song', song_id=song.id) }}" class="btn edit">✏️</a>
-                        <form onsubmit="return confirmDelete(event)" data-song-id="{{ song.id }}" style="display:inline;">
-                            <button type="submit" class="btn delete">🗑️</button>
-                        </form>
+                        <button class="btn delete" onclick="openDeleteModal({{ song.id }})">🗑️</button>
                     </div>
                 </li>
                 {% endfor %}
@@ -83,5 +81,43 @@
     }
 </script>
 
+<script>
+    function openDeleteModal(songId) {
+        document.getElementById('deleteSongId').value = songId;
+        document.getElementById('deleteModal').style.display = 'block';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        document.getElementById('deletePassword').value = '';
+    }
+
+    function submitDelete() {
+        const password = document.getElementById('deletePassword').value;
+        const songId = document.getElementById('deleteSongId').value;
+
+        if (password === 'tajneheslo') {
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = `/delete_song/${songId}`;
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            alert("Špatné heslo.");
+        }
+    }
+</script>
+
+<div id="deleteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeDeleteModal()">&times;</span>
+        <h3>Potvrzení smazání</h3>
+        <p>Zadej heslo pro smazání písničky:</p>
+        <input type="password" id="deletePassword" class="form-input" placeholder="Heslo">
+        <button onclick="submitDelete()" class="form-button">Smazat</button>
+        <input type="hidden" id="deleteSongId">
+    </div>
+</div>
+        
 </body>
 </html>
